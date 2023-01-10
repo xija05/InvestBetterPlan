@@ -27,5 +27,8 @@ namespace InvestBetterPlan_RestAPI.Models
         public virtual ICollection<Goaltransactionfunding> Goaltransactionfundings { get; set; }
         public virtual ICollection<Goaltransaction> Goaltransactions { get; set; }
         public virtual ICollection<User> InverseAdvisor { get; set; }
+
+        public override string ToString() =>
+            $"{Firstname} {Surname}";
     }
 }
