@@ -1,7 +1,10 @@
 ﻿
 using InvestBetterPlan_RestAPI.Models;
 using InvestBetterPlan_RestAPI.Models.Dto;
+using InvestBetterPlan_RestAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace InvestBetterPlan_RestAPI.Controllers
 {
@@ -9,53 +12,69 @@ namespace InvestBetterPlan_RestAPI.Controllers
     [ApiController]
     public class BetterPlanAPIController : ControllerBase
     {
-        private readonly challengeContext _db;
+        private readonly IUserRepository _dbUser;
 
-        public BetterPlanAPIController(challengeContext db)
+        public UserDTO userDTO { get; set; }    
+
+        public BetterPlanAPIController(IUserRepository dbUser)
         {
-            _db = db;
+            _dbUser = dbUser;
+            userDTO = new UserDTO();
         }
-
-        //[HttpGet]
-        //public ActionResult<IEnumerable<User>> GetUsers()
-        //{
-        //    return Ok(
-        //                (from u in _db.Users
-        //                select u).Take(3).ToList()
-        //                );
-        //}
-
 
         [HttpGet("{id:int}", Name = "GetUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-        public ActionResult<UserDTO> GetUser(int id)
+        public async Task< ActionResult<UserDTO>> GetUser(int id)
         {
-            if (id == 0)
+            try
             {
-                return BadRequest();
+                if (id == 0)
+                {
+                    return BadRequest();
+                }
+
+                var user = await _dbUser.GetUser(u => u.Id == id);
+
+                if (user == null)
+                    return NotFound();
+
+                //var user01 = await (
+                //            (from u in _db.Users
+                //             where u.Id == id
+
+                //             select new
+                //             {
+                //                 Id = u.Id,
+                //                 NombreCompleto = u.ToString(),
+                //                 AdvisorId = u.Advisorid,
+                //                 FechaCreacion = u.Created
+                //             }).ToListAsync()
+                //    );
+
+                //if (user01 == null)
+                //    return NotFound();
+
+                
+                userDTO.Id = user.Id;
+                userDTO.NombreCompleto = user.ToString();
+                userDTO.NombreCompletoAdvisor = _dbUser.GetAdvisorFullNameById(user.Advisorid);
+                userDTO.FechaCreacion = new DateTime(user.Created.Year, user.Created.Month, user.Created.Day);
+
+               
+            }
+            catch (Exception ex)
+            {
+
             }
 
-            //var user = _db.Users.FirstOrDefault(user => user.Id == id);
-            var user = (
-                        (from u in _db.Users
-                        where u.Id == id
-                        select new
-                        {
-                            Id = u.Id,
-                            NombreCompleto = u.ToString(),
-                            NombreCompletoAdvisor = string.Empty,
-                            FechaCreacion = u.Created
-                        }
-                        ).ToList()
-                );
-
-            if (user == null)
-                return NotFound();
-            return Ok(user);
+            return Ok(userDTO);
         }
+
+       
+
 
         //[HttpGet("{id:int}/summary")]
         //[ProducesResponseType(StatusCodes.Status200OK)]
@@ -73,5 +92,8 @@ namespace InvestBetterPlan_RestAPI.Controllers
         //        return NotFound();
         //    return Ok(user);
         //}
+
+
+       
     }
 }
