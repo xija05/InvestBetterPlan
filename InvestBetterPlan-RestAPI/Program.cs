@@ -13,6 +13,7 @@ builder.Services.AddDbContext<challengeContext>(options =>
                         );
 //Add registro el repositorio 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISummaryRepository, SummaryRepository>();
 
 builder.Services.AddControllers(option => {
     //option.ReturnHttpNotAcceptable = true;  //Al implementar logger esta linea puede ser comentada

@@ -13,13 +13,13 @@ namespace InvestBetterPlan_RestAPI.Controllers
     public class BetterPlanAPIController : ControllerBase
     {
         private readonly IUserRepository _dbUser;
+        private readonly ISummaryRepository _dbSummary;
+       
 
-        public UserDTO userDTO { get; set; }    
-
-        public BetterPlanAPIController(IUserRepository dbUser)
+        public BetterPlanAPIController(IUserRepository dbUser, ISummaryRepository dbSummary)
         {
-            _dbUser = dbUser;
-            userDTO = new UserDTO();
+            _dbUser = dbUser;     
+            _dbSummary = dbSummary;
         }
 
         [HttpGet("{id:int}", Name = "GetUser")]
@@ -29,6 +29,7 @@ namespace InvestBetterPlan_RestAPI.Controllers
 
         public async Task< ActionResult<UserDTO>> GetUser(int id)
         {
+            UserDTO userDTO = new UserDTO();
             try
             {
                 if (id == 0)
@@ -41,23 +42,7 @@ namespace InvestBetterPlan_RestAPI.Controllers
                 if (user == null)
                     return NotFound();
 
-                //var user01 = await (
-                //            (from u in _db.Users
-                //             where u.Id == id
-
-                //             select new
-                //             {
-                //                 Id = u.Id,
-                //                 NombreCompleto = u.ToString(),
-                //                 AdvisorId = u.Advisorid,
-                //                 FechaCreacion = u.Created
-                //             }).ToListAsync()
-                //    );
-
-                //if (user01 == null)
-                //    return NotFound();
-
-                
+                              
                 userDTO.Id = user.Id;
                 userDTO.NombreCompleto = user.ToString();
                 userDTO.NombreCompletoAdvisor = _dbUser.GetAdvisorFullNameById(user.Advisorid);
@@ -73,13 +58,26 @@ namespace InvestBetterPlan_RestAPI.Controllers
             return Ok(userDTO);
         }
 
-       
 
 
-        //[HttpGet("{id:int}/summary")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        [HttpGet("{id:int}/summary")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<ActionResult<List<SummaryDTO>>> GetSummary(int id)
+        {
+            if (id == 0)
+                return BadRequest();
+
+            var summary = await _dbSummary.GetSummary(id);
+
+            if (summary == null)
+                return NotFound();
+
+            return Ok(summary);
+        }
 
         //public ActionResult<UserDTO> GetUserSummary(int id)
         //{
@@ -94,6 +92,6 @@ namespace InvestBetterPlan_RestAPI.Controllers
         //}
 
 
-       
+
     }
 }

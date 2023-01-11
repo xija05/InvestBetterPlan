@@ -1,8 +1,9 @@
 ﻿using InvestBetterPlan_RestAPI.Models;
+using InvestBetterPlan_RestAPI.Models.Constants;
 using InvestBetterPlan_RestAPI.Models.Dto;
 using InvestBetterPlan_RestAPI.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
+
 using System.Linq.Expressions;
 
 namespace InvestBetterPlan_RestAPI.Repository
@@ -11,8 +12,6 @@ namespace InvestBetterPlan_RestAPI.Repository
     {
 
         private readonly challengeContext _db;
-
-      
 
         public UserRepository(challengeContext db)
         {
@@ -45,7 +44,7 @@ namespace InvestBetterPlan_RestAPI.Repository
             }
             catch (Exception ex)
             {
-
+                return String.Empty;
             }
 
             return result;
