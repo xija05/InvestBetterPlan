@@ -14,12 +14,14 @@ namespace InvestBetterPlan_RestAPI.Controllers
     {
         private readonly IUserRepository _dbUser;
         private readonly ISummaryRepository _dbSummary;
+        private readonly IGoalsRepository _dbGoal;
        
 
-        public BetterPlanAPIController(IUserRepository dbUser, ISummaryRepository dbSummary)
+        public BetterPlanAPIController(IUserRepository dbUser, ISummaryRepository dbSummary, IGoalsRepository dbGoal)
         {
             _dbUser = dbUser;     
             _dbSummary = dbSummary;
+            _dbGoal = dbGoal;
         }
 
         [HttpGet("{id:int}", Name = "GetUser")]
@@ -72,6 +74,24 @@ namespace InvestBetterPlan_RestAPI.Controllers
                 return BadRequest();
 
             var summary = await _dbSummary.GetSummary(id);
+
+            if (summary == null)
+                return NotFound();
+
+            return Ok(summary);
+        }
+
+        [HttpGet("{id:int}/goals")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<ActionResult<List<SummaryDTO>>> GetGoals(int id)
+        {
+            if (id == 0)
+                return BadRequest();
+
+            var summary = await _dbGoal.GetGoals(id);
 
             if (summary == null)
                 return NotFound();

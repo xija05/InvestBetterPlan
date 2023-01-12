@@ -32,7 +32,7 @@ namespace InvestBetterPlan_RestAPI.Repository
                                                             select new
                                                             {
                                                                 IdUser = gtf.Ownerid,
-                                                                DestinationCurrencyId = gtf.Owner.Currencyid,
+                                                                DestinationCurrencyId = gtf.Goal.Displaycurrencyid,
                                                                 SourceCurrencyId = gtf.Goal.Currencyid,
                                                                 DateGTF = gtf.Date,
                                                                 Quotas =gtf.Quotas,
@@ -111,7 +111,7 @@ namespace InvestBetterPlan_RestAPI.Repository
 
                 var lstSummBalyAportParaConvertir = summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId != p.SourceCurrencyId);
               
-
+              
                 foreach (var summ in lstSummBalyAportParaConvertir)
                 {
                     BalanceDTO balanceDTO = new BalanceDTO();
@@ -132,12 +132,9 @@ namespace InvestBetterPlan_RestAPI.Repository
                     SummaryDTO objSummary = new SummaryDTO();
 
                     objSummary.Balance = Convert.ToDouble(lstBalanceYAportes.Sum(x => x.Quotas * x.FundingShareValue * x.CurrencyIndicator)).ToString();
-                    objSummary.AportesActuales = Convert.ToDouble(lstBalanceYAportes.Sum(x => x.FundingShareValue * x.CurrencyIndicator)).ToString(Constants.c_CurrencyServerFormatNumber_EUR);
+                    objSummary.AportesActuales = Convert.ToDouble(lstBalanceYAportes.Sum(x => x.FundingShareValue * x.CurrencyIndicator)).ToString();
                     lstSummary.Add(objSummary);
                 }
-
-
-
             }
             catch (Exception ex)
             {
@@ -147,8 +144,6 @@ namespace InvestBetterPlan_RestAPI.Repository
             return lstSummary;
         }
 
-     
-       
 
         private string GetCurrencyNameById(int? currencyId)
         {
