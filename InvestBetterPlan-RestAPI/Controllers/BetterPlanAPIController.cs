@@ -86,32 +86,35 @@ namespace InvestBetterPlan_RestAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-        public async Task<ActionResult<List<SummaryDTO>>> GetGoals(int id)
+        public async Task<ActionResult<List<GoalsDTO>>> GetGoals(int id)
         {
             if (id == 0)
                 return BadRequest();
 
-            var summary = await _dbGoal.GetGoals(id);
+            var goals = await _dbGoal.GetGoals(id);
 
-            if (summary == null)
+            if (goals == null)
                 return NotFound();
 
-            return Ok(summary);
+            return Ok(goals);
         }
 
-        //public ActionResult<UserDTO> GetUserSummary(int id)
-        //{
-        //    if (id == 0)
-        //        return BadRequest();
+        [HttpGet("{id:int}/goals/{goalid:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<GoalDetailsDTO>> GetGoalDetail(int usId, int goalId)
+        {
+            if (usId == 0 || goalId == 0)
+                return BadRequest();
 
-        //    var user = UserStore.usersList.FirstOrDefault(user => user.Id == id);
+            var goalDetails = await _dbGoal.GetGoalDetail(usId, goalId);
 
-        //    if (user == null)
-        //        return NotFound();
-        //    return Ok(user);
-        //}
+            if (goalDetails == null)
+                return NotFound();
 
-
-
+            return Ok(goalDetails);
+        }
+        
     }
 }

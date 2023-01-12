@@ -35,7 +35,7 @@ namespace InvestBetterPlan_RestAPI.Repository
                                                                 DestinationCurrencyId = gtf.Goal.Displaycurrencyid,
                                                                 SourceCurrencyId = gtf.Goal.Currencyid,
                                                                 DateGTF = gtf.Date,
-                                                                Quotas =gtf.Quotas,
+                                                                Quotas = gtf.Funding.Isbox == true? 1d: gtf.Quotas,
                                                                 GTAmount = gtf.Transaction.Amount.Value,
                                                                 FSValue = fs.Value
                                                             }).ToListAsync();
@@ -110,6 +110,7 @@ namespace InvestBetterPlan_RestAPI.Repository
                 #endregion
 
                 var lstSummBalyAportParaConvertir = summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId != p.SourceCurrencyId);
+
               
               
                 foreach (var summ in lstSummBalyAportParaConvertir)

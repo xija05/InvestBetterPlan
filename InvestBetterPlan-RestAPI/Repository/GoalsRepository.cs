@@ -2,7 +2,7 @@
 using InvestBetterPlan_RestAPI.Models.Dto;
 using InvestBetterPlan_RestAPI.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
-
+using System.Runtime.InteropServices;
 
 namespace InvestBetterPlan_RestAPI.Repository
 {
@@ -31,7 +31,7 @@ namespace InvestBetterPlan_RestAPI.Repository
                                                     InversionInicial = g.Initialinvestment,
                                                     AporteMensual = g.Monthlycontribution,
                                                     MontoObjetivo = g.Targetamount,
-                                                    EntidadFinanciera = g.Financialentity != null? "Sin Entidad Financiera" : g.Financialentity.Title,
+                                                    EntidadFinanciera = g.Financialentity == null? "Sin Entidad Financiera" : g.Financialentity.Title,
                                                     FechaCreacion = g.Created,
                                                     Portafolio = new
                                                     {
@@ -57,7 +57,9 @@ namespace InvestBetterPlan_RestAPI.Repository
                     objGoal.FechaCreacion = DateTime.Now;
                     objGoal.Portfolio = new PortfolioDTO();
 
-                    goals.Add(objGoal);                    
+                    goals.Add(objGoal);
+
+                    return goals;
                 }
 
                 foreach (var item in goalsByUserID)
@@ -94,6 +96,84 @@ namespace InvestBetterPlan_RestAPI.Repository
             }
 
             return goals;
+        }
+
+        public async Task<GoalDetailsDTO> GetGoalDetail(int userId, int goalId)
+        {
+            GoalDetailsDTO detailsDTO = new GoalDetailsDTO();
+            try
+            {
+                var goalUserDetails = await (
+                                      from g in _db.Goals
+                                      where g.Userid == userId && g.Id == goalId
+                                      select new
+                                      {
+                                          GoalId = g.Id,                                          
+                                          TituloMeta = g.Title,
+                                          Anios = g.Years,
+                                          InversionInicial = g.Initialinvestment,
+                                          AporteMensual = g.Monthlycontribution,
+                                          MontoObjetivo = g.Targetamount,
+                                          CategorioMeta = g.Goalcategory.Title,
+                                          EntidadFinanciera = g.Financialentity.Title
+                                      }
+                                      ).ToListAsync();
+
+                if (goalUserDetails == null)
+                    return null;
+
+                //Calcular balance
+                double balance = GetBalanceByUserIdAndGoalId(userId, goalId);
+
+                
+
+                //calcular retiros
+                //calcular aportes
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            return detailsDTO;
+        }
+
+        private double GetBalanceByUserIdAndGoalId(int userId, int goalId)
+        {
+            double totBalance = 0d;
+            try
+            {
+                var goalTransForBalance = (from gtf in _db.Goaltransactionfundings
+                                           join fs in _db.Fundingsharevalues on gtf.Fundingid equals fs.Fundingid
+                                           where gtf.Ownerid == userId && gtf.Goalid == goalId
+                                           && fs.Date.CompareTo(gtf.Date) == 0
+                                           select new
+                                           {
+
+                                               Quotas = gtf.Funding.Isbox == true ? 1d : gtf.Quotas,
+                                               FundingShareValue = fs.Value,
+                                               DestinationCurrencyId = gtf.Goal.Displaycurrencyid,
+                                               SourceCurrencyId = gtf.Goal.Currencyid,
+                                               LastDate = gtf.Date
+                                           }).ToList();
+
+                if (goalTransForBalance == null || goalTransForBalance.Count <= 0)
+                    return totBalance;
+
+                foreach (var item in goalTransForBalance)
+                {
+                    BalanceDTO balance = new BalanceDTO();
+                   // balance
+
+                }
+            }
+            catch (Exception)
+            {
+                return 0d;
+            }
+
+            return totBalance;
         }
     }
 }
