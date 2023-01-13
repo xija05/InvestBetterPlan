@@ -24,17 +24,15 @@ namespace InvestBetterPlan_RestAPI.Repository
             {
                 var summaryBalanceYAporteActual = await (from gtf in _db.Goaltransactionfundings
                                                             join fs in _db.Fundingsharevalues on gtf.Fundingid equals fs.Fundingid
-                                                            where gtf.Ownerid == userId && gtf.Transactionid.HasValue == true 
-                                                            && gtf.Quotas.HasValue == true && gtf.Amount.HasValue == true
-                                                            && fs.Date.CompareTo(gtf.Date) == 0
+                                                            where gtf.Ownerid == userId && gtf.Transactionid.HasValue == true                                        && fs.Date.CompareTo(gtf.Date) == 0
                                                             
                                                             select new BalanceAporte
                                                             {
                                                                 SourceCurrencyId = (int)gtf.Transaction.Currencyid,
                                                                 DestinationCurrencyId = (int) gtf.Goal.Displaycurrencyid,
                                                                 LastDate = gtf.Date,
-                                                                Quotas = (double)gtf.Quotas,
-                                                                Amount = gtf.Transaction.Amount.Value,
+                                                                Quotas = gtf.Quotas.HasValue == true? gtf.Quotas.Value : 0d,
+                                                                Amount = gtf.Amount.HasValue == true? gtf.Transaction.Amount.Value: 0d,
                                                                 FundingShareValue = fs.Value, 
                                                                 IsBox= gtf.Funding.Isbox,
                                                                 Type =gtf.Type,
@@ -100,15 +98,16 @@ namespace InvestBetterPlan_RestAPI.Repository
                 SummaryDTO summBalanceYAporte = new SummaryDTO();
                 string currencyServerFormatNumber = GetCurrencyServerFormatNumByCurrencyId(currencyId);
 
-                if (balanceAportes.Count > 0)
+                if (balanceAportes.Count <= 0)
                     return null;
 
                 foreach (BalanceAporte item in balanceAportes)
                 {
-                    if (item.SourceCurrencyId == item.DestinationCurrencyId)
-                        item.CurrencyIndicator = 1d;
-                    else
+                    if (item.SourceCurrencyId != item.DestinationCurrencyId)
                         item.CurrencyIndicator = GetCurencyIndicator(item.SourceCurrencyId, item.DestinationCurrencyId, item.LastDate);
+                    else
+                        item.CurrencyIndicator = 1d;
+
 
                     if (item.IsBox == true)
                         item.Quotas = 1d;
@@ -131,29 +130,26 @@ namespace InvestBetterPlan_RestAPI.Repository
             }
         }
 
-      
-
         private double GetCurencyIndicator(int sourceCurrencyId, int destinationCurrencyId, DateOnly fecha)
         {
             try
             {
-                var montoConvertido = from s in _db.Currencyindicators
+                var currencyIndicator =  (from s in _db.Currencyindicators
                                       where s.Sourcecurrencyid == sourceCurrencyId
                                       && s.Destinationcurrencyid == destinationCurrencyId
-                                      && s.Date.ToString(Constants.c_fechaFormatoSoloFecha) == fecha.ToString(Constants.c_fechaFormatoSoloFecha)
-                                      select s.Value;
+                                      && s.Date.CompareTo(fecha) == 0 
+                                      select s).ToList();
 
                 //No existe valor del currencyIndicator
-                if (montoConvertido == null)
+                if (currencyIndicator == null || currencyIndicator.Count <= 0)
                     return 1d;
 
-                return Convert.ToDouble(montoConvertido);
+                return Convert.ToDouble(currencyIndicator[0].Value);
             }
             catch (Exception)
             {
                 return 0d;
             }
-
         }
 
         private string GetCurrencyServerFormatNumByCurrencyId(int currencyId)
@@ -172,7 +168,5 @@ namespace InvestBetterPlan_RestAPI.Repository
                     return string.Empty;
             }
         }
-
-
     }
 }

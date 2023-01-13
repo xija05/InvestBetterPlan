@@ -103,12 +103,12 @@ namespace InvestBetterPlan_RestAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<GoalDetailsDTO>> GetGoalDetail(int usId, int goalId)
+        public async Task<ActionResult<GoalDetailsDTO>> GetGoalDetail(int id, int goalid)
         {
-            if (usId == 0 || goalId == 0)
+            if (id == 0 || goalid == 0)
                 return BadRequest();
 
-            var goalDetails = await _dbGoal.GetGoalDetail(usId, goalId);
+            var goalDetails = await _dbGoal.GetGoalDetail(id, goalid);
 
             if (goalDetails == null)
                 return NotFound();
