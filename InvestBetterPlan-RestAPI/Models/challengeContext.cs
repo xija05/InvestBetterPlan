@@ -40,8 +40,8 @@ namespace InvestBetterPlan_RestAPI.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseNpgsql("Host=104.197.55.31;Database=challenge;Port=5432;User Id=challengeuser;Password=challengepass;");
+                //optionsBuilder.UseNpgsql("Host=104.197.55.31;Database=challenge;Port=5432;User Id=challengeuser;Password=challengepass;");
+                optionsBuilder.UseNpgsql("ChallengeDB");
             }
         }
 

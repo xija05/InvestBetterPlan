@@ -25,19 +25,20 @@ namespace InvestBetterPlan_RestAPI.Repository
                 var summaryBalanceYAporteActual = await (from gtf in _db.Goaltransactionfundings
                                                             join fs in _db.Fundingsharevalues on gtf.Fundingid equals fs.Fundingid
                                                             where gtf.Ownerid == userId && gtf.Transactionid.HasValue == true 
-                                                            && gtf.Transaction.Type == Constants.c_GoalTransactionType_Buy
                                                             && gtf.Quotas.HasValue == true && gtf.Amount.HasValue == true
-                                                            && fs.Date.CompareTo(gtf.Date) == 0 && gtf.Amount > 0 && gtf.Quotas > 0
+                                                            && fs.Date.CompareTo(gtf.Date) == 0
                                                             
-                                                            select new
+                                                            select new BalanceAporte
                                                             {
-                                                                IdUser = gtf.Ownerid,
-                                                                DestinationCurrencyId = gtf.Goal.Displaycurrencyid,
-                                                                SourceCurrencyId = gtf.Goal.Currencyid,
-                                                                DateGTF = gtf.Date,
-                                                                Quotas = gtf.Funding.Isbox == true? 1d: gtf.Quotas,
-                                                                GTAmount = gtf.Transaction.Amount.Value,
-                                                                FSValue = fs.Value
+                                                                SourceCurrencyId = (int)gtf.Transaction.Currencyid,
+                                                                DestinationCurrencyId = (int) gtf.Goal.Displaycurrencyid,
+                                                                LastDate = gtf.Date,
+                                                                Quotas = (double)gtf.Quotas,
+                                                                Amount = gtf.Transaction.Amount.Value,
+                                                                FundingShareValue = fs.Value, 
+                                                                IsBox= gtf.Funding.Isbox,
+                                                                Type =gtf.Type,
+                                                                CurrencyIndicator = 1d
                                                             }).ToListAsync();
 
                 if (summaryBalanceYAporteActual == null || summaryBalanceYAporteActual.Count <= 0)
@@ -50,92 +51,39 @@ namespace InvestBetterPlan_RestAPI.Repository
                 }
 
               
-                List<BalanceDTO> lstBalanceYAportes = new List<BalanceDTO>();
-
                 #region " Currency CLP "
 
-                var lstSummBalYApCLP =  summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == p.SourceCurrencyId && p.DestinationCurrencyId == Constants.c_CurrencyId_CLP);
+                var summBalYApCLP = GetSummaryCurrencyByCurrencyId(summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == Constants.c_CurrencyId_CLP), Constants.c_CurrencyId_CLP);
 
-                if (lstSummBalYApCLP != null && lstSummBalYApCLP.Count > 0)
-                {
-                    SummaryDTO objSummaryCLP = new SummaryDTO();
-
-                    objSummaryCLP.Balance = Convert.ToDouble(lstSummBalYApCLP.Sum(x => x.Quotas * x.FSValue * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_CLP);
-                    objSummaryCLP.AportesActuales = Convert.ToDouble(lstSummBalYApCLP.Sum(x => x.GTAmount * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_CLP);
-                    lstSummary.Add(objSummaryCLP);
-                }
-
+                if(summBalYApCLP != null)
+                    lstSummary.Add(summBalYApCLP);
                 #endregion
 
                 #region " Currency CLF "
 
-                var lstSummBalYApCLF = summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == p.SourceCurrencyId && p.DestinationCurrencyId == Constants.c_CurrencyId_CLF);
+                var summBalYApCLF = GetSummaryCurrencyByCurrencyId(summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == Constants.c_CurrencyId_CLF), Constants.c_CurrencyId_CLF);
 
-                if (lstSummBalYApCLF != null && lstSummBalYApCLF.Count > 0)
-                {
-                    SummaryDTO objSummaryCLF = new SummaryDTO();
-
-                    objSummaryCLF.Balance = Convert.ToDouble(lstSummBalYApCLF.Sum(x => x.Quotas * x.FSValue * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_CLF);
-                    objSummaryCLF.AportesActuales = Convert.ToDouble(lstSummBalYApCLF.Sum(x => x.GTAmount * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_CLF);
-                    lstSummary.Add(objSummaryCLF);
-                }
+                if (summBalYApCLF != null)
+                    lstSummary.Add(summBalYApCLF);
                 #endregion
 
                 #region " Currency USD "
 
-                var lstSummBalYApUSD = summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == p.SourceCurrencyId && p.DestinationCurrencyId == Constants.c_CurrencyId_USD);
+                var summBalYApUSD = GetSummaryCurrencyByCurrencyId(summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == Constants.c_CurrencyId_USD), Constants.c_CurrencyId_USD);
 
-                if (lstSummBalYApUSD != null && lstSummBalYApUSD.Count > 0)
-                {
-                    SummaryDTO objSummaryUSD = new SummaryDTO();
-
-                    objSummaryUSD.Balance = Convert.ToDouble(lstSummBalYApUSD.Sum(x => x.Quotas * x.FSValue * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_USD);
-                    objSummaryUSD.AportesActuales = Convert.ToDouble(lstSummBalYApUSD.Sum(x => x.GTAmount * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_USD);
-                    lstSummary.Add(objSummaryUSD);
-                }
+                if (summBalYApUSD != null)
+                    lstSummary.Add(summBalYApUSD);
                 #endregion
 
                 #region " Currency EUR "
 
-                var lstSummBalYApEUR = summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == p.SourceCurrencyId && p.DestinationCurrencyId == Constants.c_CurrencyId_EUR);
+                var summBalYApEUR = GetSummaryCurrencyByCurrencyId(summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId == Constants.c_CurrencyId_EUR), Constants.c_CurrencyId_EUR);
 
-                if (lstSummBalYApEUR != null && lstSummBalYApEUR.Count > 0)
-                {
-                    SummaryDTO objSummaryEUR = new SummaryDTO();
-
-                    objSummaryEUR.Balance = Convert.ToDouble(lstSummBalYApEUR.Sum(x => x.Quotas * x.FSValue * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_EUR);
-                    objSummaryEUR.AportesActuales = Convert.ToDouble(lstSummBalYApEUR.Sum(x => x.GTAmount * 1d)).ToString(Constants.c_CurrencyServerFormatNumber_EUR);
-                    lstSummary.Add(objSummaryEUR);
-                }
+                if (summBalYApEUR != null)
+                    lstSummary.Add(summBalYApEUR);
                 #endregion
 
-                var lstSummBalyAportParaConvertir = summaryBalanceYAporteActual.FindAll(p => p.DestinationCurrencyId != p.SourceCurrencyId);
 
-              
-              
-                foreach (var summ in lstSummBalyAportParaConvertir)
-                {
-                    BalanceDTO balanceDTO = new BalanceDTO();
-                    balanceDTO.UserId = summ.IdUser;
-                    balanceDTO.DestinationCurrency = summ.DestinationCurrencyId.Value;
-                    balanceDTO.SourceCurrency = summ.SourceCurrencyId.Value;
-                    balanceDTO.Amount = summ.GTAmount;
-                    balanceDTO.Quotas = (double)summ.Quotas;
-                    balanceDTO.LastDate = summ.DateGTF;
-                    balanceDTO.FundingShareValue = summ.FSValue;
-                    balanceDTO.CurrencyIndicator = GetCurencyIndicator(balanceDTO.SourceCurrency, balanceDTO.DestinationCurrency, summ.DateGTF);
-
-                    lstBalanceYAportes.Add(balanceDTO);
-                }
-
-                if(lstBalanceYAportes.Count > 0)
-                {
-                    SummaryDTO objSummary = new SummaryDTO();
-
-                    objSummary.Balance = Convert.ToDouble(lstBalanceYAportes.Sum(x => x.Quotas * x.FundingShareValue * x.CurrencyIndicator)).ToString();
-                    objSummary.AportesActuales = Convert.ToDouble(lstBalanceYAportes.Sum(x => x.FundingShareValue * x.CurrencyIndicator)).ToString();
-                    lstSummary.Add(objSummary);
-                }
             }
             catch (Exception ex)
             {
@@ -145,27 +93,45 @@ namespace InvestBetterPlan_RestAPI.Repository
             return lstSummary;
         }
 
-
-        private string GetCurrencyNameById(int? currencyId)
+        private SummaryDTO GetSummaryCurrencyByCurrencyId(List<BalanceAporte> balanceAportes, int currencyId)
         {
-            if (!currencyId.HasValue)
-                return String.Empty;
-
-            switch (currencyId.Value)
+            try
             {
-                case Constants.c_CurrencyId_CLP:
-                    return Constants.c_CurrencyName_CLP;
-                case Constants.c_CurrencyId_USD:
-                    return Constants.c_CurrencyName_USD;
-                case Constants.c_CurrencyId_CLF:
-                    return Constants.c_CurrencyName_CLF;
-                case Constants.c_CurrencyId_EUR:
-                    return Constants.c_CurrencyName_EUR;
-                default:
-                    return String.Empty;
-            }
+                SummaryDTO summBalanceYAporte = new SummaryDTO();
+                string currencyServerFormatNumber = GetCurrencyServerFormatNumByCurrencyId(currencyId);
 
+                if (balanceAportes.Count > 0)
+                    return null;
+
+                foreach (BalanceAporte item in balanceAportes)
+                {
+                    if (item.SourceCurrencyId == item.DestinationCurrencyId)
+                        item.CurrencyIndicator = 1d;
+                    else
+                        item.CurrencyIndicator = GetCurencyIndicator(item.SourceCurrencyId, item.DestinationCurrencyId, item.LastDate);
+
+                    if (item.IsBox == true)
+                        item.Quotas = 1d;
+                }
+
+                summBalanceYAporte.Balance = Convert.ToDouble(
+                                        balanceAportes.Sum(x => x.Quotas * x.FundingShareValue * x.CurrencyIndicator))
+                                        .ToString(currencyServerFormatNumber);
+                summBalanceYAporte.AportesActuales = Convert.ToDouble(
+                                        balanceAportes.FindAll(x => x.Type == Constants.c_GoalTransactionType_Buy)
+                                        .Sum( x => x.Amount * x.CurrencyIndicator))
+                                        .ToString(currencyServerFormatNumber);
+
+                return summBalanceYAporte;
+
+            }
+            catch (Exception ex)
+            {
+                return null; ;
+            }
         }
+
+      
 
         private double GetCurencyIndicator(int sourceCurrencyId, int destinationCurrencyId, DateOnly fecha)
         {
@@ -190,6 +156,23 @@ namespace InvestBetterPlan_RestAPI.Repository
 
         }
 
-       
+        private string GetCurrencyServerFormatNumByCurrencyId(int currencyId)
+        {
+            switch (currencyId)
+            {
+                case Constants.c_CurrencyId_CLP:
+                    return Constants.c_CurrencyServerFormatNumber_CLP;
+                case Constants.c_CurrencyId_CLF:
+                    return Constants.c_CurrencyServerFormatNumber_CLF;
+                case Constants.c_CurrencyId_USD:
+                    return Constants.c_CurrencyServerFormatNumber_USD;
+                case Constants.c_CurrencyId_EUR:
+                    return Constants.c_CurrencyServerFormatNumber_EUR;
+                default:
+                    return string.Empty;
+            }
+        }
+
+
     }
 }

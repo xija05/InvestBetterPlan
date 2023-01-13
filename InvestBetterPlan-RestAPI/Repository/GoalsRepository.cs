@@ -108,7 +108,8 @@ namespace InvestBetterPlan_RestAPI.Repository
                                       where g.Userid == userId && g.Id == goalId
                                       select new
                                       {
-                                          GoalId = g.Id,                                          
+                                          GoalId = g.Id,
+                                          DestinationCurrency = g.Displaycurrencyid,
                                           TituloMeta = g.Title,
                                           Anios = g.Years,
                                           InversionInicial = g.Initialinvestment,
