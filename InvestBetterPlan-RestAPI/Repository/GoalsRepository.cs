@@ -121,7 +121,7 @@ namespace InvestBetterPlan_RestAPI.Repository
                                       }
                                       ).ToListAsync();
 
-                if (goalUserDetails == null)
+                if (goalUserDetails == null || goalUserDetails.Count <= 0)
                     return null;
 
                 DetalleMeta detalleMeta = GetBalanceRetiroAporte(userId, goalId);

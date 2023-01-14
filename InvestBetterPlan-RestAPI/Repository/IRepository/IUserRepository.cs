@@ -6,8 +6,6 @@ namespace InvestBetterPlan_RestAPI.Repository.IRepository
 {
     public interface IUserRepository
     {
-        Task<User> GetUser(Expression<Func<User, bool>> filter = null);
-
-        string GetAdvisorFullNameById(int? idAdvisor);
+        Task<UserDTO> GetUser(int id);
     }
 }

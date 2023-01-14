@@ -17,16 +17,30 @@ namespace InvestBetterPlan_RestAPI.Repository
         {
             _db = db;
         }
-        public async Task<User> GetUser(Expression<Func<User, bool>> filter = null)
+        public async Task<UserDTO> GetUser(int id)
         {
-            IQueryable<User> query = _db.Users;
-            if (filter != null)
+            try
             {
-                query = query.Where(filter);
+                var user = await (
+                                    from u in _db.Users
+                                    where u.Id == id
+                                    select new UserDTO
+                                    {
+                                        NombreCompleto = u.ToString(),
+                                        NombreCompletoAdvisor = u.Advisorid.HasValue? u.Advisor.ToString(): "Sin Advisor",
+                                        FechaCreacion = new DateTime(u.Created.Year, u.Created.Month, u.Created.Day)
+                                    }
+                                    ).ToListAsync();
 
+                if (user == null || user.Count <= 0)
+                    return null;
+
+                return user[0];
             }
-
-            return await query.FirstOrDefaultAsync();
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         public string GetAdvisorFullNameById(int? idAdvisor)

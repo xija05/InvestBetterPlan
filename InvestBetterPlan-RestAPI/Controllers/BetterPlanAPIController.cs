@@ -31,33 +31,17 @@ namespace InvestBetterPlan_RestAPI.Controllers
 
         public async Task< ActionResult<UserDTO>> GetUser(int id)
         {
-            UserDTO userDTO = new UserDTO();
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    return BadRequest();
-                }
-
-                var user = await _dbUser.GetUser(u => u.Id == id);
-
-                if (user == null)
-                    return NotFound();
-
-                              
-                userDTO.Id = user.Id;
-                userDTO.NombreCompleto = user.ToString();
-                userDTO.NombreCompletoAdvisor = _dbUser.GetAdvisorFullNameById(user.Advisorid);
-                userDTO.FechaCreacion = new DateTime(user.Created.Year, user.Created.Month, user.Created.Day);
-
-               
-            }
-            catch (Exception ex)
-            {
-
+                return BadRequest();
             }
 
-            return Ok(userDTO);
+            var user = await _dbUser.GetUser(id);
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
         }
 
 
