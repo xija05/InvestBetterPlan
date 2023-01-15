@@ -23,7 +23,7 @@ He publicado mi API en el siguiente link:
 http://solucionbetterplan.somee.com
 
 1. Para la primera tarea "Traer usuario" mi path es: 
-https:// solucionbetterplan.somee.com/api/users/{id}, donde ‘id’ es el userID.
+https:// solucionbetterplan.somee.com/api/users/{id}, donde ‘id’ es el userId.
 
 2. Para la segunda tarea "Traer resumen usuario actual" mi path es: 
 https:// solucionbetterplan.somee.com/api/users/{id}/summary, donde ‘id’ es el userId.
@@ -31,5 +31,5 @@ https:// solucionbetterplan.somee.com/api/users/{id}/summary, donde ‘id’ es 
 https:// solucionbetterplan.somee.com/api/users/{id}/goals, donde ‘id’ es el userId.
 
 4. Para la quinta tarea "Traer detalles de una meta" mi path: 
-https:// solucionbetterplan.somee.com /api/users/{id}/goals/{goalid}, donde ‘id’ es el userId.
+https:// solucionbetterplan.somee.com /api/users/{id}/goals/{goalid}, donde ‘id’ es el userId y {goalid} es el id de la meta.
 
