@@ -27,9 +27,9 @@ https:// solucionbetterplan.somee.com/api/users/{id}, donde ‘id’ es el userI
 
 2. Para la segunda tarea "Traer resumen usuario actual" mi path es: 
 https:// solucionbetterplan.somee.com/api/users/{id}/summary, donde ‘id’ es el userId.
-3. Para la cuarta tarea "Traer metas de un usuario" mi path es: 
+3. Para la tercera tarea "Traer metas de un usuario" mi path es: 
 https:// solucionbetterplan.somee.com/api/users/{id}/goals, donde ‘id’ es el userId.
 
-4. Para la quinta tarea "Traer detalles de una meta" mi path: 
+4. Para la cuarta tarea "Traer detalles de una meta" mi path: 
 https:// solucionbetterplan.somee.com /api/users/{id}/goals/{goalid}, donde ‘id’ es el userId y {goalid} es el id de la meta.
 
