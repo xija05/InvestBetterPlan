@@ -92,6 +92,7 @@ namespace InvestBetterPlan_RestAPI.Controllers
             if (id == 0 || goalid == 0)
                 return BadRequest();
 
+
             var goalDetails = await _dbGoal.GetGoalDetail(id, goalid);
 
             if (goalDetails == null)
